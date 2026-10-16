@@ -1,0 +1,362 @@
+/* ============================================================
+   DTTap! - Global Design System
+   Target: Tablet landscape, anak-anak, UI ramah & cerah
+   ============================================================ */
+
+/* ---- CSS Variables ---- */
+:root {
+  --color-bg: #fdf6e3;
+  --color-primary: #ff6b35;
+  --color-primary-dark: #e55a28;
+  --color-secondary: #4ecdc4;
+  --color-secondary-dark: #3ab5ac;
+  --color-accent: #ffe66d;
+  --color-accent-dark: #f4d03f;
+  --color-success: #2ecc71;
+  --color-success-dark: #27ae60;
+  --color-danger: #e74c3c;
+  --color-danger-dark: #c0392b;
+  --color-purple: #9b59b6;
+  --color-pink: #ff6b9d;
+  --color-blue: #3498db;
+  --color-text: #2c3e50;
+  --color-text-light: #7f8c8d;
+  --color-white: #ffffff;
+  --color-card-bg: #ffffff;
+  --color-card-shadow: rgba(0,0,0,0.12);
+
+  --font-main: 'Nunito', 'Segoe UI', sans-serif;
+  --font-display: 'Fredoka One', 'Nunito', sans-serif;
+
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 32px;
+  --radius-xl: 50px;
+
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.16);
+  --shadow-card: 0 6px 20px rgba(0,0,0,0.10);
+}
+
+/* ---- Reset & Base ---- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-main);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Utility ---- */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.full {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- Buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 36px;
+  border: none;
+  border-radius: var(--radius-xl);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  letter-spacing: 0.5px;
+  outline: none;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-bottom: 5px solid var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background: var(--color-secondary);
+  color: var(--color-white);
+  border-bottom: 5px solid var(--color-secondary-dark);
+}
+
+.btn-accent {
+  background: var(--color-accent);
+  color: var(--color-text);
+  border-bottom: 5px solid var(--color-accent-dark);
+}
+
+.btn-success {
+  background: var(--color-success);
+  color: var(--color-white);
+  border-bottom: 5px solid var(--color-success-dark);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--color-white);
+  border-bottom: 5px solid var(--color-danger-dark);
+}
+
+.btn-purple {
+  background: var(--color-purple);
+  color: var(--color-white);
+  border-bottom: 5px solid #8e44ad;
+}
+
+.btn-lg {
+  padding: 22px 56px;
+  font-size: 1.8rem;
+  border-bottom-width: 7px;
+}
+
+.btn-sm {
+  padding: 10px 24px;
+  font-size: 1.1rem;
+  border-bottom-width: 4px;
+}
+
+/* ---- Screen Base ---- */
+.screen {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- Card styles ---- */
+.game-card {
+  position: absolute;
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  background: var(--color-card-bg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid rgba(255,255,255,0.8);
+  transition: box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.game-card:hover {
+  box-shadow: 0 10px 32px rgba(0,0,0,0.20);
+}
+
+.game-card:active {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.game-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  padding: 10px;
+}
+
+/* ---- Animations ---- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(60px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounceIn {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.1); opacity: 1; }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wiggle {
+  0%,100% { transform: rotate(-5deg); }
+  50%      { transform: rotate(5deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.06); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+@keyframes starPop {
+  0%   { transform: scale(0) rotate(0deg); opacity: 0; }
+  60%  { transform: scale(1.3) rotate(180deg); opacity: 1; }
+  100% { transform: scale(1) rotate(360deg); opacity: 1; }
+}
+
+@keyframes cardCorrect {
+  0%   { transform: scale(1); filter: brightness(1); }
+  30%  { transform: scale(1.2); filter: brightness(1.3) drop-shadow(0 0 16px #2ecc71); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+@keyframes cardWrong {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-12px); }
+  40%       { transform: translateX(12px); }
+  60%       { transform: translateX(-8px); }
+  80%       { transform: translateX(8px); }
+}
+
+@keyframes cardMoveToPosition {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ---- Floating decorative shapes ---- */
+.deco-shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+/* ---- Progress bar ---- */
+.progress-bar-wrap {
+  background: rgba(0,0,0,0.08);
+  border-radius: 100px;
+  overflow: hidden;
+  height: 14px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  transition: width 0.5s ease;
+}
+
+/* ---- Popup overlay ---- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.25s ease;
+  backdrop-filter: blur(4px);
+}
+
+.popup {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 40px 48px;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  animation: bounceIn 0.4s ease;
+  text-align: center;
+  position: relative;
+}
+
+.popup h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  margin-bottom: 16px;
+  color: var(--color-primary);
+}
+
+.popup p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+/* ---- Feedback flash ---- */
+.feedback-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.feedback-flash.correct {
+  background: radial-gradient(ellipse at center, rgba(46,204,113,0.3) 0%, transparent 70%);
+  opacity: 1;
+  animation: fadeIn 0.1s ease, fadeOut 0.4s ease 0.2s forwards;
+}
+
+.feedback-flash.wrong {
+  background: radial-gradient(ellipse at center, rgba(231,76,60,0.3) 0%, transparent 70%);
+  opacity: 1;
+  animation: fadeIn 0.1s ease, fadeOut 0.4s ease 0.2s forwards;
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}

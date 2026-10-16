@@ -1,0 +1,245 @@
+.game-screen {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #f8fcff 0%, #f0fdf4 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- HUD ---- */
+.game-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 3px solid #ddd;
+  flex-shrink: 0;
+  gap: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.hud-exit {
+  flex-shrink: 0;
+  font-size: 1rem;
+  padding: 8px 18px;
+}
+
+.hud-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-category {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-progress {
+  width: 100%;
+  max-width: 360px;
+}
+
+.hud-info {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+.hud-decoy-badge {
+  background: rgba(231,76,60,0.12);
+  color: var(--color-danger);
+  padding: 1px 8px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.hud-score {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.score-correct, .score-wrong {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+
+.score-correct {
+  background: rgba(46,204,113,0.12);
+  color: var(--color-success-dark);
+}
+
+.score-wrong {
+  background: rgba(231,76,60,0.12);
+  color: var(--color-danger-dark);
+}
+
+/* ---- Instruction Bar ---- */
+.instruction-bar {
+  padding: 10px 24px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  animation: slideInUp 0.3s ease;
+}
+
+.instruction-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.instruction-speaker {
+  background: rgba(255,255,255,0.3);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.instruction-speaker:hover {
+  background: rgba(255,255,255,0.5);
+  transform: scale(1.1);
+}
+
+.instruction-speaker:active {
+  transform: scale(0.95);
+}
+
+.instruction-text {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.instruction-text strong {
+  font-size: 1.9rem;
+}
+
+/* ---- Game Area ---- */
+.game-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- Game Cards ---- */
+.game-card.enter {
+  animation: bounceIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.game-card.card-correct {
+  animation: cardCorrect 0.5s ease forwards !important;
+}
+
+.game-card.card-wrong {
+  animation: cardWrong 0.4s ease forwards !important;
+}
+
+/* ---- Click Progress Dots ---- */
+.click-progress {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 10;
+}
+
+.click-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.12);
+  border: 3px solid rgba(0,0,0,0.08);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.click-dot.filled {
+  border-color: transparent;
+  transform: scale(1.2);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+/* ---- Feedback Emoji ---- */
+.feedback-emoji {
+  position: fixed;
+  font-size: 5rem;
+  pointer-events: none;
+  z-index: 60;
+  animation: starPop 0.5s ease both;
+}
+
+.correct-emoji {
+  top: 20%;
+  right: 5%;
+}
+
+.wrong-emoji {
+  top: 20%;
+  left: 5%;
+  opacity: 0.7;
+}
+
+/* ---- Round Banner ---- */
+.round-banner-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease;
+}
+
+.round-banner {
+  padding: 32px 64px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: bounceIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.round-banner-num {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  color: white;
+  text-shadow: 0 3px 12px rgba(0,0,0,0.25);
+}
+
+.round-banner-sub {
+  font-size: 1.3rem;
+  color: rgba(255,255,255,0.85);
+}
+
+/* ---- Landscape compact ---- */
+@media (max-height: 600px) and (orientation: landscape) {
+  .instruction-text { font-size: 1.3rem; }
+  .instruction-text strong { font-size: 1.5rem; }
+  .hud-category { font-size: 1rem; }
+}
