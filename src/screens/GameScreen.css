@@ -237,9 +237,59 @@
   color: rgba(255,255,255,0.85);
 }
 
+/* ---- Responsive: Tablet & Mobile ---- */
+@media (max-width: 600px) {
+  .game-hud {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .hud-exit {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+  .hud-category {
+    font-size: 0.95rem;
+  }
+  .hud-progress {
+    max-width: 140px;
+  }
+  .hud-info {
+    font-size: 0.75rem;
+  }
+  .score-correct, .score-wrong {
+    font-size: 0.9rem;
+    padding: 3px 8px;
+  }
+  .instruction-bar {
+    padding: 8px 14px;
+  }
+  .instruction-text {
+    font-size: 1.2rem;
+  }
+  .instruction-text strong {
+    font-size: 1.4rem;
+  }
+  .instruction-speaker {
+    width: 36px;
+    height: 36px;
+    font-size: 1.15rem;
+  }
+  .round-banner {
+    padding: 24px 36px;
+  }
+  .round-banner-num {
+    font-size: 2.2rem;
+  }
+}
+
 /* ---- Landscape compact ---- */
 @media (max-height: 600px) and (orientation: landscape) {
-  .instruction-text { font-size: 1.3rem; }
-  .instruction-text strong { font-size: 1.5rem; }
-  .hud-category { font-size: 1rem; }
+  .game-hud { padding: 6px 16px; }
+  .instruction-bar { padding: 6px 16px; }
+  .instruction-text { font-size: 1.25rem; }
+  .instruction-text strong { font-size: 1.45rem; }
+  .instruction-speaker { width: 34px; height: 34px; font-size: 1.1rem; }
+  .hud-category { font-size: 0.95rem; }
+  .round-banner { padding: 20px 40px; }
+  .round-banner-num { font-size: 2.2rem; }
 }

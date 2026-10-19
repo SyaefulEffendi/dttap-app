@@ -98,6 +98,15 @@ export default function HomeScreen({ onStart }) {
       {showRules && (
         <div className="overlay" onClick={() => setShowRules(false)}>
           <div className="popup rules-popup" onClick={e => e.stopPropagation()}>
+            <button
+              id="btn-exit-rules"
+              className="rules-popup-close"
+              onClick={() => setShowRules(false)}
+              title="Tutup panduan"
+              aria-label="Tutup panduan"
+            >
+              ✕
+            </button>
             <div className="rules-header">
               <span className="rules-icon">📋</span>
               <h2>Cara Penggunaan Aplikasi DTTap!</h2>

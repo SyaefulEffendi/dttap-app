@@ -404,3 +404,16 @@ html, body {
   font-size: 1.25rem;
   line-height: 1;
 }
+
+@media (max-width: 600px) {
+  .bgm-toggle-btn {
+    top: 10px;
+    right: 12px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
+  .bgm-icon {
+    font-size: 1.05rem;
+  }
+}

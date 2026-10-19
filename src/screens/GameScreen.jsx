@@ -5,37 +5,70 @@ import './GameScreen.css';
 
 const TOTAL_ROUNDS = 10;
 const CLICKS_TO_PASS = 3;     // klik target benar per sub-tahap
-const CARD_SIZE = 180;        // px
 const MOVE_DELAY = 700;       // ms setelah klik benar sebelum kartu pindah
 const INTRO_DELAY = 800;      // ms sebelum instruksi pertama diucapkan
 const SPEECH_DELAY = 400;     // ms setelah kartu muncul sebelum TTS
 
-/** Posisi acak dalam area bermain (menghindari tepi) */
+/** Hitung ukuran kartu proporsional dengan area bermain agar pas di iPad, tablet, dan HP */
+function getCardSize(areaW, areaH) {
+  // Batasi ukuran maksimal 180px dan minimal 100px
+  const byWidth = areaW / 3.4;
+  const byHeight = areaH * 0.44;
+  const size = Math.floor(Math.min(180, Math.min(byWidth, byHeight)));
+  return Math.max(105, size);
+}
+
+/** Posisi acak dalam area bermain (menghindari tepi layar) */
 function randomPosition(areaW, areaH, cardSize) {
-  const margin = 30;
-  const x = margin + Math.random() * (areaW - cardSize - margin * 2);
-  const y = margin + Math.random() * (areaH - cardSize - margin * 2);
+  const marginX = Math.max(12, Math.min(26, areaW * 0.03));
+  const marginY = Math.max(12, Math.min(26, areaH * 0.04));
+  const maxX = Math.max(0, areaW - cardSize - marginX * 2);
+  const maxY = Math.max(0, areaH - cardSize - marginY * 2);
+  const x = marginX + Math.random() * maxX;
+  const y = marginY + Math.random() * maxY;
   return { x, y };
 }
 
 /** Generate posisi tidak bertabrakan untuk beberapa kartu */
 function generatePositions(count, areaW, areaH, cardSize) {
   const positions = [];
-  const attempts = 100;
+  const attempts = 150;
+  const minDistance = cardSize * 0.95;
+
   for (let i = 0; i < count; i++) {
-    let pos;
-    let tries = 0;
-    do {
-      pos = randomPosition(areaW, areaH, cardSize);
-      tries++;
-    } while (
-      tries < attempts &&
-      positions.some(p =>
-        Math.abs(p.x - pos.x) < cardSize + 20 &&
-        Math.abs(p.y - pos.y) < cardSize + 20
-      )
-    );
-    positions.push(pos);
+    let bestPos = null;
+    let maxDistToExisting = -1;
+
+    for (let tryIdx = 0; tryIdx < attempts; tryIdx++) {
+      const pos = randomPosition(areaW, areaH, cardSize);
+      let collision = false;
+      let closestDist = Infinity;
+
+      for (const p of positions) {
+        const dx = Math.abs(p.x - pos.x);
+        const dy = Math.abs(p.y - pos.y);
+        const dist = Math.hypot(dx, dy);
+        if (dist < closestDist) {
+          closestDist = dist;
+        }
+        if (dx < minDistance && dy < minDistance) {
+          collision = true;
+          break;
+        }
+      }
+
+      if (!collision) {
+        bestPos = pos;
+        break;
+      }
+
+      if (closestDist > maxDistToExisting) {
+        maxDistToExisting = closestDist;
+        bestPos = pos;
+      }
+    }
+
+    positions.push(bestPos || randomPosition(areaW, areaH, cardSize));
   }
   return positions;
 }
@@ -98,11 +131,13 @@ export default function GameScreen({ category, onFinish, onBack }) {
   /** Render kartu di posisi baru */
   const placeCards = useCallback((cardsToShow, target) => {
     const { w, h } = getArea();
-    const positions = generatePositions(cardsToShow.length, w, h, CARD_SIZE);
+    const size = getCardSize(w, h);
+    const positions = generatePositions(cardsToShow.length, w, h, size);
     const newCards = cardsToShow.map((card, i) => ({
       card,
       x: positions[i].x,
       y: positions[i].y,
+      size,
       anim: 'enter',
     }));
     setCards(newCards);
@@ -112,14 +147,27 @@ export default function GameScreen({ category, onFinish, onBack }) {
   /** Pindahkan posisi kartu secara acak */
   const shufflePositions = useCallback(() => {
     const { w, h } = getArea();
-    const positions = generatePositions(cards.length, w, h, CARD_SIZE);
+    const size = getCardSize(w, h);
+    const positions = generatePositions(cards.length, w, h, size);
     setCards(prev => prev.map((c, i) => ({
       ...c,
       x: positions[i].x,
       y: positions[i].y,
+      size,
       anim: 'move',
     })));
   }, [cards.length]);
+
+  // Tangani rotasi layar / resize pada tablet dan iPad
+  useEffect(() => {
+    const handleResize = () => {
+      if (cards.length > 0 && !isTransitioning) {
+        shufflePositions();
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [cards.length, isTransitioning, shufflePositions]);
 
   // ===== Setup ronde baru =====
   const startRound = useCallback((rIdx) => {
@@ -324,36 +372,39 @@ export default function GameScreen({ category, onFinish, onBack }) {
 
       {/* ---- Game Area ---- */}
       <div className="game-area" ref={areaRef}>
-        {cards.map(({ card, x, y, anim }) => (
-          <div
-            key={card.id}
-            id={`card-${card.id}`}
-            className={[
-              'game-card',
-              anim,
-              clickedCardId === card.id && feedback === 'correct' ? 'card-correct' : '',
-              clickedCardId === card.id && feedback === 'wrong' ? 'card-wrong' : '',
-            ].join(' ')}
-            style={{
-              left: x,
-              top: y,
-              width: CARD_SIZE,
-              height: CARD_SIZE,
-              transition: anim === 'move'
-                ? 'left 0.55s cubic-bezier(0.34,1.56,0.64,1), top 0.55s cubic-bezier(0.34,1.56,0.64,1)'
-                : undefined,
-              borderColor: category.color + '55',
-            }}
-            onClick={() => handleCardClick(card)}
-          >
-            <img
-              src={getCardImageUrl(category.folder, card.file)}
-              alt={card.name}
-              draggable={false}
-              onError={e => { e.target.style.display = 'none'; }}
-            />
-          </div>
-        ))}
+        {cards.map(({ card, x, y, size, anim }) => {
+          const cardDim = size || 160;
+          return (
+            <div
+              key={card.id}
+              id={`card-${card.id}`}
+              className={[
+                'game-card',
+                anim,
+                clickedCardId === card.id && feedback === 'correct' ? 'card-correct' : '',
+                clickedCardId === card.id && feedback === 'wrong' ? 'card-wrong' : '',
+              ].join(' ')}
+              style={{
+                left: x,
+                top: y,
+                width: cardDim,
+                height: cardDim,
+                transition: anim === 'move'
+                  ? 'left 0.55s cubic-bezier(0.34,1.56,0.64,1), top 0.55s cubic-bezier(0.34,1.56,0.64,1)'
+                  : undefined,
+                borderColor: category.color + '55',
+              }}
+              onClick={() => handleCardClick(card)}
+            >
+              <img
+                src={getCardImageUrl(category.folder, card.file)}
+                alt={card.name}
+                draggable={false}
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+            </div>
+          );
+        })}
 
         {/* Progress klik target */}
         {!isTransitioning && targetClicks > 0 && (
