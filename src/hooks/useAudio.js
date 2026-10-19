@@ -46,17 +46,19 @@ export function useSpeech() {
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
-
       // Hentikan suara yang sedang berbunyi
       window.speechSynthesis.cancel();
     } catch (e) {
       // ignore
     }
 
-    // Jeda 60ms setelah cancel() agar Chromium menyelesaikan cancellation queue
-    // dan tidak membatalkan utterance baru yang hendak diputar
+    // Jeda agar browser menyelesaikan pembatalan queue
     timeoutRef.current = setTimeout(() => {
       try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'id-ID';
         utterance.rate = rate;
@@ -64,37 +66,49 @@ export function useSpeech() {
         utterance.volume = volume;
 
         // Ambil daftar suara terkini
-        if (!cachedVoices.length) {
-          updateVoices();
+        let voices = window.speechSynthesis.getVoices();
+        if (!voices || !voices.length) {
+          voices = cachedVoices;
         }
 
-        // Cari suara Bahasa Indonesia
-        const idVoice = cachedVoices.find(v =>
-          v.lang.toLowerCase().startsWith('id') ||
-          v.lang.toLowerCase().includes('indonesia') ||
-          v.name.toLowerCase().includes('indonesia')
-        );
+        if (voices && voices.length) {
+          // 1. Cari suara Bahasa Indonesia
+          let chosenVoice = voices.find(v =>
+            (v.lang && (v.lang.toLowerCase().startsWith('id') || v.lang.toLowerCase().includes('indonesia'))) ||
+            (v.name && v.name.toLowerCase().includes('indonesia'))
+          );
+          // 2. Fallback ke bahasa serumpun (Melayu ms-MY) jika ID tidak tersedia di sistem Windows
+          if (!chosenVoice) {
+            chosenVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('ms'));
+          }
+          // 3. Fallback default
+          if (!chosenVoice) {
+            chosenVoice = voices.find(v => v.default) || voices[0];
+          }
 
-        if (idVoice) {
-          utterance.voice = idVoice;
+          if (chosenVoice) {
+            utterance.voice = chosenVoice;
+          }
         }
 
-        // PENTING: Simpan ke window agar V8 Garbage Collector tidak menghapus objek di memori
-        window.__activeUtterance = utterance;
+        // Simpan referensi global agar tidak di-garbage collect oleh engine Chromium
+        if (!window.__activeUtterances) {
+          window.__activeUtterances = [];
+        }
+        window.__activeUtterances.push(utterance);
 
         utterance.onend = () => {
-          if (window.__activeUtterance === utterance) {
-            window.__activeUtterance = null;
+          if (window.__activeUtterances) {
+            window.__activeUtterances = window.__activeUtterances.filter(u => u !== utterance);
           }
         };
 
         utterance.onerror = (e) => {
-          // Abaikan error 'canceled' dan 'interrupted' karena normal saat user mengklik cepat
+          if (window.__activeUtterances) {
+            window.__activeUtterances = window.__activeUtterances.filter(u => u !== utterance);
+          }
           if (e.error !== 'canceled' && e.error !== 'interrupted') {
             console.warn('SpeechSynthesis error:', e.error);
-          }
-          if (window.__activeUtterance === utterance) {
-            window.__activeUtterance = null;
           }
         };
 
@@ -102,7 +116,7 @@ export function useSpeech() {
       } catch (err) {
         console.warn('Gagal memutar suara instruksi:', err);
       }
-    }, 60);
+    }, 70);
   }, []);
 
   const stop = useCallback(() => {

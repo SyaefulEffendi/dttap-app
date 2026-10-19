@@ -360,3 +360,47 @@ html, body {
 @keyframes fadeOut {
   to { opacity: 0; }
 }
+
+/* ---- Floating Background Music Toggle Button ---- */
+.bgm-toggle-btn {
+  position: fixed;
+  top: 18px;
+  right: 20px;
+  z-index: 99;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(255, 107, 53, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(6px);
+}
+
+.bgm-toggle-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25);
+  border-color: var(--color-primary);
+}
+
+.bgm-toggle-btn:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.bgm-toggle-btn.muted {
+  border-color: rgba(127, 140, 141, 0.4);
+  background: rgba(245, 245, 245, 0.88);
+  color: var(--color-text-light);
+}
+
+.bgm-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}

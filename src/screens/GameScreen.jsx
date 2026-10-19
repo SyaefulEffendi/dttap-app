@@ -76,19 +76,24 @@ export default function GameScreen({ category, onFinish, onBack }) {
 
   /** Ucapkan instruksi suara */
   const sayInstruction = useCallback((targetCard, immediate = false) => {
-    if (!targetCard) return;
+    const tgt = targetCard || getCurrentTarget();
+    if (!tgt || !tgt.name) return;
+
     if (instructionTimerRef.current) {
       clearTimeout(instructionTimerRef.current);
+      instructionTimerRef.current = null;
     }
+
     const runSpeech = () => {
-      speak(`Klik ${targetCard.name}!`);
+      speak(`Klik ${tgt.name}!`);
     };
+
     if (immediate) {
       runSpeech();
     } else {
       instructionTimerRef.current = setTimeout(runSpeech, SPEECH_DELAY);
     }
-  }, [speak]);
+  }, [speak, getCurrentTarget]);
 
   /** Render kartu di posisi baru */
   const placeCards = useCallback((cardsToShow, target) => {
@@ -200,6 +205,10 @@ export default function GameScreen({ category, onFinish, onBack }) {
     // Semua kartu hilang sebentar
     setCards([]);
     stop();
+    if (instructionTimerRef.current) {
+      clearTimeout(instructionTimerRef.current);
+      instructionTimerRef.current = null;
+    }
 
     setTimeout(() => {
       if (subPhase === 'solo') {
