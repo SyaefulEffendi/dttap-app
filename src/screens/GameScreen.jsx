@@ -3,7 +3,7 @@ import { buildRounds, getCardImageUrl, shuffleArray } from '../data/categories';
 import { useSpeech, useSound } from '../hooks/useAudio';
 import './GameScreen.css';
 
-const TOTAL_ROUNDS = 10;
+const TOTAL_ROUNDS = 5;
 const CLICKS_TO_PASS = 3;     // klik target benar per sub-tahap
 const MOVE_DELAY = 700;       // ms setelah klik benar sebelum kartu pindah
 const INTRO_DELAY = 800;      // ms sebelum instruksi pertama diucapkan

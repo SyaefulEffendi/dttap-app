@@ -21,26 +21,49 @@ export default function App() {
 
   const bgmRef = useRef(null);
 
+  const isBgmMutedRef = useRef(isBgmMuted);
+  const screenRef = useRef(screen);
+
+  useEffect(() => {
+    isBgmMutedRef.current = isBgmMuted;
+  }, [isBgmMuted]);
+
+  useEffect(() => {
+    screenRef.current = screen;
+  }, [screen]);
+
   // Inisialisasi Audio Backsound
   useEffect(() => {
     const audio = new Audio('/assets/audio/bgm.mp3');
     audio.loop = true;
-    audio.volume = 0.28; // Volume lembut agar nyaman untuk anak dan terapi
+    audio.volume = 0.28;
     bgmRef.current = audio;
 
-    // Autoplay unlock saat user melakukan interaksi pertama di halaman
-    const unlockAutoplay = () => {
-      if (bgmRef.current && (screen === SCREENS.HOME || screen === SCREENS.MENU) && !isBgmMuted) {
-        bgmRef.current.play().catch(() => {});
+    const playIfAllowed = () => {
+      const currentScreen = screenRef.current;
+      const isMuted = isBgmMutedRef.current;
+      if (audio && (currentScreen === SCREENS.HOME || currentScreen === SCREENS.MENU) && !isMuted) {
+        const p = audio.play();
+        if (p !== undefined) {
+          p.then(() => {
+            // Berhasil play! Hapus listener interaksi
+            events.forEach(evt => window.removeEventListener(evt, playIfAllowed, true));
+          }).catch(() => {
+            // Masih terblokir kebijakan browser, tetap pasang listener untuk sentuhan berikutnya
+          });
+        }
       }
     };
 
-    window.addEventListener('pointerdown', unlockAutoplay, { once: true });
-    window.addEventListener('keydown', unlockAutoplay, { once: true });
+    // Coba putar langsung saat pertama load (berhasil jika browser mengizinkan autoplay)
+    playIfAllowed();
+
+    // Buka kunci autoplay pada sentuhan/klik/tap pertama user di layar HP/tablet/laptop
+    const events = ['touchstart', 'touchend', 'click', 'pointerdown', 'keydown'];
+    events.forEach(evt => window.addEventListener(evt, playIfAllowed, true));
 
     return () => {
-      window.removeEventListener('pointerdown', unlockAutoplay);
-      window.removeEventListener('keydown', unlockAutoplay);
+      events.forEach(evt => window.removeEventListener(evt, playIfAllowed, true));
       audio.pause();
       bgmRef.current = null;
     };
@@ -52,9 +75,7 @@ export default function App() {
     if (!audio) return;
 
     if ((screen === SCREENS.HOME || screen === SCREENS.MENU) && !isBgmMuted) {
-      audio.play().catch(() => {
-        // Autoplay mungkin diblokir browser sebelum ada interaksi klik
-      });
+      audio.play().catch(() => {});
     } else {
       audio.pause();
     }
@@ -78,11 +99,18 @@ export default function App() {
     setScreen(SCREENS.HOME);
     setSelectedCategory(null);
     setFinalScore(null);
+    if (bgmRef.current && !isBgmMutedRef.current) {
+      bgmRef.current.play().catch(() => {});
+    }
   }, []);
 
   const goMenu = useCallback(() => {
     setScreen(SCREENS.MENU);
     setFinalScore(null);
+    // User baru saja klik tombol "Mulai Bermain!", manfaatkan user gesture ini untuk langsung memutar musik
+    if (bgmRef.current && !isBgmMutedRef.current) {
+      bgmRef.current.play().catch(() => {});
+    }
   }, []);
 
   const handleSelectCategory = useCallback((category) => {

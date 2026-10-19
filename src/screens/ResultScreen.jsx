@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './ResultScreen.css';
 
-const TOTAL_ROUNDS = 10;
+const TOTAL_ROUNDS = 5;
 const MAX_CORRECT = TOTAL_ROUNDS * 9; // 9 klik benar per ronde (3 sub-tahap × 3 klik)
 
 function Confetti() {

@@ -314,8 +314,8 @@ export function pickRandomCards(categoryCards, count = 3) {
   return shuffleArray(categoryCards).slice(0, count);
 }
 
-/** Buat set 10 ronde dari pool kartu (setiap ronde ambil 3 kartu berbeda) */
-export function buildRounds(categoryCards, totalRounds = 10, cardsPerRound = 3) {
+/** Buat set ronde dari pool kartu (setiap ronde ambil 3 kartu berbeda) */
+export function buildRounds(categoryCards, totalRounds = 5, cardsPerRound = 3) {
   const pool = shuffleArray(categoryCards);
   const rounds = [];
   for (let i = 0; i < totalRounds; i++) {

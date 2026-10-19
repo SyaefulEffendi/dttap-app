@@ -89,7 +89,7 @@ export default function HomeScreen({ onStart }) {
         {/* Badge info */}
         <div className="home-badges">
           <span className="badge">9 Kategori</span>
-          <span className="badge">10 Ronde/Sesi</span>
+          <span className="badge">5 Ronde/Sesi</span>
           <span className="badge">Metode DTT</span>
         </div>
       </div>
