@@ -17,90 +17,78 @@ export default function App() {
   const [screen, setScreen] = useState(SCREENS.HOME);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [finalScore, setFinalScore] = useState(null);
-  const [isBgmMuted, setIsBgmMuted] = useState(false);
-
-  const bgmRef = useRef(null);
-
-  const isBgmMutedRef = useRef(isBgmMuted);
-  const screenRef = useRef(screen);
-
-  useEffect(() => {
-    isBgmMutedRef.current = isBgmMuted;
-  }, [isBgmMuted]);
-
-  useEffect(() => {
-    screenRef.current = screen;
-  }, [screen]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const userMutedRef = useRef(false);
+  const audioRef = useRef(null);
 
   // Inisialisasi Audio Backsound
   useEffect(() => {
-    const audio = new Audio('/assets/audio/bgm.mp3');
-    audio.loop = true;
+    const audio = audioRef.current;
+    if (!audio) return;
     audio.volume = 0.28;
-    bgmRef.current = audio;
 
-    const playIfAllowed = () => {
-      const currentScreen = screenRef.current;
-      const isMuted = isBgmMutedRef.current;
-      if (audio && (currentScreen === SCREENS.HOME || currentScreen === SCREENS.MENU) && !isMuted) {
-        const p = audio.play();
-        if (p !== undefined) {
-          p.then(() => {
-            // Berhasil play! Hapus listener interaksi
-            events.forEach(evt => window.removeEventListener(evt, playIfAllowed, true));
-          }).catch(() => {
-            // Masih terblokir kebijakan browser, tetap pasang listener untuk sentuhan berikutnya
-          });
-        }
+    // Coba play saat awal (berhasil di desktop jika autoplay diperbolehkan)
+    audio.play().then(() => {
+      setIsPlaying(true);
+    }).catch(() => {
+      // Browser mobile memblokir autoplay sebelum user berinteraksi, ini normal
+      setIsPlaying(false);
+    });
+
+    // Buka kunci dan putar musik otomatis begitu ada sentuhan/tap/klik pertama di mana saja di layar
+    const unlockAudio = () => {
+      if (audio.paused && !userMutedRef.current) {
+        audio.play().then(() => {
+          setIsPlaying(true);
+        }).catch(() => {});
       }
     };
 
-    // Coba putar langsung saat pertama load (berhasil jika browser mengizinkan autoplay)
-    playIfAllowed();
-
-    // Buka kunci autoplay pada sentuhan/klik/tap pertama user di layar HP/tablet/laptop
-    const events = ['touchstart', 'touchend', 'click', 'pointerdown', 'keydown'];
-    events.forEach(evt => window.addEventListener(evt, playIfAllowed, true));
+    const events = ['touchstart', 'touchend', 'click', 'pointerdown'];
+    events.forEach(evt => window.addEventListener(evt, unlockAudio, { passive: true }));
 
     return () => {
-      events.forEach(evt => window.removeEventListener(evt, playIfAllowed, true));
-      audio.pause();
-      bgmRef.current = null;
+      events.forEach(evt => window.removeEventListener(evt, unlockAudio));
     };
   }, []);
 
-  // Kelola pemutaran BGM berdasarkan layar aktif & status mute
+  // Kelola musik saat berpindah layar
   useEffect(() => {
-    const audio = bgmRef.current;
+    const audio = audioRef.current;
     if (!audio) return;
 
-    if ((screen === SCREENS.HOME || screen === SCREENS.MENU) && !isBgmMuted) {
-      audio.play().catch(() => {});
+    if (screen === SCREENS.HOME || screen === SCREENS.MENU) {
+      if (!userMutedRef.current && audio.paused) {
+        audio.play().catch(() => {});
+      }
     } else {
       audio.pause();
     }
-  }, [screen, isBgmMuted]);
-
-  const toggleBgm = useCallback(() => {
-    setIsBgmMuted(prev => {
-      const next = !prev;
-      if (bgmRef.current) {
-        if (next) {
-          bgmRef.current.pause();
-        } else if (screen === SCREENS.HOME || screen === SCREENS.MENU) {
-          bgmRef.current.play().catch(() => {});
-        }
-      }
-      return next;
-    });
   }, [screen]);
+
+  // Tombol toggle pengatur musik
+  const toggleBgm = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      userMutedRef.current = true;
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      userMutedRef.current = false;
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch(() => {});
+    }
+  }, [isPlaying]);
 
   const goHome = useCallback(() => {
     setScreen(SCREENS.HOME);
     setSelectedCategory(null);
     setFinalScore(null);
-    if (bgmRef.current && !isBgmMutedRef.current) {
-      bgmRef.current.play().catch(() => {});
+    if (audioRef.current && !userMutedRef.current) {
+      audioRef.current.play().catch(() => {});
     }
   }, []);
 
@@ -108,8 +96,8 @@ export default function App() {
     setScreen(SCREENS.MENU);
     setFinalScore(null);
     // User baru saja klik tombol "Mulai Bermain!", manfaatkan user gesture ini untuk langsung memutar musik
-    if (bgmRef.current && !isBgmMutedRef.current) {
-      bgmRef.current.play().catch(() => {});
+    if (audioRef.current && !userMutedRef.current) {
+      audioRef.current.play().catch(() => {});
     }
   }, []);
 
@@ -132,17 +120,27 @@ export default function App() {
 
   return (
     <div className="full">
+      {/* Audio element DOM */}
+      <audio
+        ref={audioRef}
+        src="/assets/audio/bgm.mp3"
+        loop
+        preload="auto"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
+
       {/* Tombol Pengatur Backsound Musik (hanya di Home & Menu) */}
       {(screen === SCREENS.HOME || screen === SCREENS.MENU) && (
         <button
           id="btn-toggle-bgm"
-          className={`bgm-toggle-btn ${isBgmMuted ? 'muted' : ''}`}
+          className={`bgm-toggle-btn ${isPlaying ? '' : 'muted'}`}
           onClick={toggleBgm}
-          title={isBgmMuted ? 'Nyalakan Musik Latar' : 'Matikan Musik Latar'}
-          aria-label={isBgmMuted ? 'Nyalakan Musik Latar' : 'Matikan Musik Latar'}
+          title={isPlaying ? 'Matikan Musik Latar' : 'Nyalakan Musik Latar'}
+          aria-label={isPlaying ? 'Matikan Musik Latar' : 'Nyalakan Musik Latar'}
         >
-          <span className="bgm-icon">{isBgmMuted ? '🔇' : '🎵'}</span>
-          <span>{isBgmMuted ? 'Musik: Mati' : 'Musik: Nyala'}</span>
+          <span className="bgm-icon">{isPlaying ? '🎵' : '🔇'}</span>
+          <span>{isPlaying ? 'Musik: Nyala' : 'Nyalakan Musik'}</span>
         </button>
       )}
 
