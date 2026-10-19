@@ -189,6 +189,11 @@ export default function GameScreen({ category, onFinish, onBack }) {
 
   // Init game
   useEffect(() => {
+    // Pastikan musik latar benar-benar berhenti saat masuk ke area bermain
+    const bgmEl = document.getElementById('bgm-audio');
+    if (bgmEl && !bgmEl.paused) {
+      bgmEl.pause();
+    }
     startRound(0);
     return () => {
       stop();

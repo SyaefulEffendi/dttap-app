@@ -20,6 +20,11 @@ export default function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const userMutedRef = useRef(false);
   const audioRef = useRef(null);
+  const screenRef = useRef(screen);
+
+  useEffect(() => {
+    screenRef.current = screen;
+  }, [screen]);
 
   // Inisialisasi Audio Backsound
   useEffect(() => {
@@ -27,22 +32,32 @@ export default function App() {
     if (!audio) return;
     audio.volume = 0.28;
 
-    // Coba play saat awal (berhasil di desktop jika autoplay diperbolehkan)
-    audio.play().then(() => {
-      setIsPlaying(true);
-    }).catch(() => {
-      // Browser mobile memblokir autoplay sebelum user berinteraksi, ini normal
-      setIsPlaying(false);
-    });
-
-    // Buka kunci dan putar musik otomatis begitu ada sentuhan/tap/klik pertama di mana saja di layar
+    // Buka kunci dan putar musik otomatis HANYA jika berada di HOME atau MENU
     const unlockAudio = () => {
+      const current = screenRef.current;
+      // Jangan pernah memutar musik jika sedang berada di layar GAME atau RESULT
+      if (current !== SCREENS.HOME && current !== SCREENS.MENU) {
+        if (!audio.paused) {
+          audio.pause();
+        }
+        return;
+      }
+
       if (audio.paused && !userMutedRef.current) {
         audio.play().then(() => {
           setIsPlaying(true);
         }).catch(() => {});
       }
     };
+
+    // Coba play saat awal jika diperbolehkan dan berada di Home/Menu
+    if (screenRef.current === SCREENS.HOME || screenRef.current === SCREENS.MENU) {
+      audio.play().then(() => {
+        setIsPlaying(true);
+      }).catch(() => {
+        setIsPlaying(false);
+      });
+    }
 
     const events = ['touchstart', 'touchend', 'click', 'pointerdown'];
     events.forEach(evt => window.addEventListener(evt, unlockAudio, { passive: true }));
@@ -62,7 +77,9 @@ export default function App() {
         audio.play().catch(() => {});
       }
     } else {
+      // Pastikan musik latar langsung berhenti di layar GAME & RESULT
       audio.pause();
+      setIsPlaying(false);
     }
   }, [screen]);
 
@@ -77,9 +94,11 @@ export default function App() {
       setIsPlaying(false);
     } else {
       userMutedRef.current = false;
-      audio.play().then(() => {
-        setIsPlaying(true);
-      }).catch(() => {});
+      if (screenRef.current === SCREENS.HOME || screenRef.current === SCREENS.MENU) {
+        audio.play().then(() => {
+          setIsPlaying(true);
+        }).catch(() => {});
+      }
     }
   }, [isPlaying]);
 
@@ -95,23 +114,35 @@ export default function App() {
   const goMenu = useCallback(() => {
     setScreen(SCREENS.MENU);
     setFinalScore(null);
-    // User baru saja klik tombol "Mulai Bermain!", manfaatkan user gesture ini untuk langsung memutar musik
     if (audioRef.current && !userMutedRef.current) {
       audioRef.current.play().catch(() => {});
     }
   }, []);
 
   const handleSelectCategory = useCallback((category) => {
+    // Hentikan musik latar seketika sebelum beralih ke GAME
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
     setSelectedCategory(category);
     setScreen(SCREENS.GAME);
   }, []);
 
   const handleGameFinish = useCallback((score) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
     setFinalScore(score);
     setScreen(SCREENS.RESULT);
   }, []);
 
   const handleReplay = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
     if (selectedCategory) {
       setFinalScore(null);
       setScreen(SCREENS.GAME);
@@ -122,6 +153,7 @@ export default function App() {
     <div className="full">
       {/* Audio element DOM */}
       <audio
+        id="bgm-audio"
         ref={audioRef}
         src="/assets/audio/bgm.mp3"
         loop
